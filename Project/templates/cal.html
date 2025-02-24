@@ -178,7 +178,10 @@
                 <div id="pagination" style="margin-top: 20px;"></div>
                 <div>
                     <h4>필터</h4>
-                    <label for="filterDate">날짜:</label>
+                    <label for="filterApply">등록일:</label>
+                    <input type="date" id="filterApply" onchange="applyFilters()">
+
+                    <label for="filterDate">예매날짜:</label>
                     <input type="date" id="filterDate" onchange="applyFilters()">
                     
                     <label for="filterType">공연 종류:</label>
@@ -222,6 +225,7 @@
                         type: concert["구분"],
                         name: concert["﻿이름"],
                         date: concert["예매날짜"],
+                        apply: concert["등록일"],
                         checked: false // 초기 상태를 체크된 상태로
                     });
                 });
@@ -231,9 +235,6 @@
                 generateCalendar();
             })
             .catch(error => console.error('데이터를 불러오는 중 오류 발생:', error));
-
-    
-
         
 
         let currentDate = new Date();
@@ -393,13 +394,15 @@
 
         // 필터 적용 함수 (필터링 후 페이지 변경)
         function applyFilters() {
+            const filterApply = document.getElementById('filterApply').value;
             const filterDate = document.getElementById('filterDate').value;
             const filterType = document.getElementById('filterType').value;
 
             const filteredEvents = events.filter(event => {
+                const matchesApply = filterApply ? event.apply === filterApply : true;
                 const matchesDate = filterDate ? event.date === filterDate : true;
                 const matchesType = filterType ? event.type === filterType : true;
-                return matchesDate && matchesType;
+                return matchesApply && matchesDate && matchesType;
             });
 
             updateEventList(filteredEvents);
@@ -455,9 +458,9 @@
             }
         }
 
-// 초기 실행
-populateYearMonthSelectors();
-updateCalendarHeader();
+        // 초기 실행
+        populateYearMonthSelectors();
+        updateCalendarHeader();
 
 
         // 체크박스 토글
