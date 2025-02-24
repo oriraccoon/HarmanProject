@@ -5,7 +5,7 @@
         "예매날짜": "2025-03-11",
         "등록일": "2025-02-24",
         "링크": "https://ticket.interpark.com/webzine/paper/TPNoticeView.asp?bbsno=34&pageno=1&stext=&no=54583&groupno=54583&seq=0&KindOfGoods=TICKET&Genre=&sort=WriteDate",
-        "checked": true
+        "checked": false
     },
     {
         "﻿이름": "연극 〈불란서 특파단〉",
@@ -21,7 +21,7 @@
         "예매날짜": "2025-02-28",
         "등록일": "2025-02-21",
         "링크": "https://ticket.interpark.com/webzine/paper/TPNoticeView.asp?bbsno=34&pageno=1&stext=&no=54581&groupno=54581&seq=0&KindOfGoods=TICKET",
-        "checked": true
+        "checked": false
     },
     {
         "﻿이름": "PEAK FESTIVAL 2025 얼리버드 티켓",
@@ -29,7 +29,7 @@
         "예매날짜": "2025-02-24",
         "등록일": "2025-02-21",
         "링크": "https://tickets.interpark.com/goods/25002448",
-        "checked": true
+        "checked": false
     },
     {
         "﻿이름": "최현우 19+I - 전주",
@@ -109,7 +109,7 @@
         "예매날짜": "2025-02-26",
         "등록일": "2025-02-21",
         "링크": "https://ticket.interpark.com/webzine/paper/TPNoticeView.asp?bbsno=34&pageno=1&stext=&no=54570&groupno=54570&seq=0&KindOfGoods=TICKET",
-        "checked": false
+        "checked": true
     },
     {
         "﻿이름": "헐리우드 영화음악 콘서트 Op. 1(카이,정선아)",
@@ -117,6 +117,6 @@
         "예매날짜": "2025-02-26",
         "등록일": "2025-02-21",
         "링크": "https://ticket.interpark.com/webzine/paper/TPNoticeView.asp?bbsno=34&pageno=1&stext=&no=54569&groupno=54569&seq=0&KindOfGoods=TICKET",
-        "checked": false
+        "checked": true
     }
 ]
