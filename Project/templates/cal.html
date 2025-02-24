@@ -3,145 +3,234 @@
     <head>
         <meta charset="UTF-8"> 
         <title>공연 예매일 달력표시</title> 
-    <style>            
+        <style>
+            /* 전체 레이아웃 */
             .container {
                 display: flex;
-                gap: 20px;
-                padding: 20px;
+                gap: 30px;
+                padding: 30px;
                 max-width: 1400px;
                 margin: 0 auto;
             }
-
+        
+            /* 달력 스타일 */
             .calendar {
                 flex: 3;
-                background: white;
-                padding: 20px;
-                border-radius: 10px;
-                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                background: #ffffff;
+                padding: 25px;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
             }
-
+        
+            /* 달력 테이블 */
             .calendar-table {
                 width: 100%;
                 table-layout: fixed;
                 border-collapse: collapse;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             }
-
+        
             .calendar-table th, 
             .calendar-table td {
-                padding: 15px;
+                padding: 20px;
                 text-align: center;
-                border: 1px solid #ddd;
-                height: 100px;
+                border: 1px solid #e0e0e0;
+                height: 120px;
                 vertical-align: top;
                 position: relative;
+                font-size: 1rem;
             }
+        
             .calendar-table td {
-                width: 120px; /* 🔥 고정 너비 */
+                width: 120px;
                 min-width: 120px;
                 max-width: 120px;
                 overflow: hidden;
+                transition: background-color 0.3s ease;
             }
+        
+            .calendar-table td:hover {
+                background-color: #f1f1f1;
+            }
+        
             .date-number {
                 font-weight: bold;
-                margin-bottom: 5px;
+                font-size: 1.25rem;
+                color: #333;
+                margin-bottom: 8px;
             }
-
-            .event-badge {color: white; padding: 3px 6px; border-radius: 4px; font-size: 0.85em;
-                margin: 2px 0; text-align: left; text-overflow: ellipsis; white-space: nowrap;
-            overflow: hidden;}
-            .event-badge[data-type="뮤지컬"] { background: #2196F3; }
-            .event-badge[data-type="콘서트"] { background: #4CAF50; }
-            .event-badge[data-type="연극"] { background: #9C27B0; }
-            .event-badge[data-type="클래식/무용"] { background: #f1f3c1; }
-            .event-badge[data-type="아동/가족"] { background: #ff0396; }
-            .event-badge[data-type="스포츠"] { background: #FF9800; }
-            .event-badge[data-type="레저"] { background: #2b1a01; }
-            .event-badge[data-type="전시/행사"] { background: hsl(242, 100%, 28%); }
-
-
+        
+            /* 이벤트 배지 스타일 */
+            .event-badge {
+                color: #fff;
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 0.9rem;
+                margin: 4px 0;
+                display: inline-block;
+                text-align: left;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
+            }
+            .event-badge[data-type="뮤지컬"] { background: #00796b; }
+            .event-badge[data-type="콘서트"] { background: #0277bd; }
+            .event-badge[data-type="연극"] { background: #d81b60; }
+            .event-badge[data-type="클래식/무용"] { background: #fbc02d; }
+            .event-badge[data-type="아동/가족"] { background: #8e24aa; }
+            .event-badge[data-type="스포츠"] { background: #ff5722; }
+            .event-badge[data-type="레저"] { background: #5e35b1; }
+            .event-badge[data-type="전시/행사"] { background: #283593; }
+        
+            /* 사이드바 스타일 */
             .sidebar {
                 flex: 1;
-                background: #f8f9fa;
+                background: #f4f6f9;
                 padding: 20px;
-                border-radius: 10px;
-                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             }
-
+        
+            /* 사이드바 이벤트 아이템 */
             .event-item {
-                margin: 10px 0;
-                padding: 10px;
-                background: white;
-                border-radius: 5px;
+                margin: 15px 0;
+                padding: 15px;
+                background: #ffffff;
+                border-radius: 8px;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             }
-
+        
+            .event-item:hover {
+                background-color: #f1f1f1;
+            }
+        
+            /* 버튼 스타일 */
             button {
-                background: #2196F3;
-                color: white;
+                background: linear-gradient(135deg, #2196f3, #21cbf3);
+                color: #fff;
                 border: none;
-                padding: 8px 16px;
-                border-radius: 4px;
+                padding: 10px 20px;
+                border-radius: 25px;
+                font-size: 1rem;
                 cursor: pointer;
+                transition: transform 0.3s ease, background 0.3s ease;
             }
+        
+            button:hover {
+                transform: scale(1.05);
+                background: linear-gradient(135deg, #21cbf3, #2196f3);
+            }
+        
+            /* 주말 셀 강조 */
             .weekend {
-            background-color: #fff3e0 ;
-            }          
+                background-color: #ffebee;
+                font-weight: bold;
+            }
+        
+            /* 입력 필드 */
             input[type="text"],
             input[type="date"] {
                 width: 100%;
-                padding: 8px;
-                margin: 5px 0;
+                padding: 12px;
+                margin: 8px 0;
+                border-radius: 8px;
+                border: 1px solid #ccc;
+                font-size: 1rem;
                 box-sizing: border-box;
+                background-color: #f9f9f9;
+                transition: border-color 0.3s ease;
             }
+        
+            input[type="text"]:focus,
+            input[type="date"]:focus {
+                border-color: #2196f3;
+            }
+        
+            /* 페이지네이션 스타일 */
             #pagination {
                 display: flex;
                 justify-content: center;
-                gap: 10px;
-                margin-top: 20px;
+                gap: 15px;
+                margin-top: 25px;
             }
-
+        
             #pagination button {
                 background: none;
                 border: none;
-                font-size: 1rem;
-                color: #2196F3;
+                font-size: 1.2rem;
+                color: #2196f3;
                 cursor: pointer;
-                padding: 5px 10px;
+                padding: 8px 16px;
+                transition: color 0.3s ease;
             }
-
+        
             #pagination button:hover {
-                text-decoration: underline;
+                color: #0d47a1;
             }
+        
+            /* 월 선택기 */
             #monthSelector {
                 display: inline-block;
                 position: absolute;
-                background-color: white;
+                background-color: #ffffff;
                 border: 1px solid #ddd;
-                border-radius: 8px;
-                padding: 15px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                border-radius: 12px;
+                padding: 20px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
                 z-index: 10;
-                font-family: 'Arial', sans-serif;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             }
-
+        
             #monthSelector select {
-                margin: 10px;
-                padding: 8px;
-                border-radius: 5px;
+                margin: 12px;
+                padding: 10px;
+                border-radius: 8px;
                 border: 1px solid #ccc;
-                font-size: 16px; /* 글씨 크기 크게 설정 */
-                font-family: 'Arial', sans-serif;
+                font-size: 1rem;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: #f9f9f9;
             }
-
+        
             #currentMonth {
-                font-size: 30px; /* 크기를 키워서 눈에 잘 띄게 */
-                font-weight: bold;
+                font-size: 32px;
+                font-weight: 600;
+                color: #333;
                 cursor: pointer;
             }
 
+            .popup {
+                display: none;
+                position: fixed;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 100;
+            }
+
+            .popup-content {
+                background: white;
+                padding: 20px;
+                border-radius: 5px;
+                width: 400px;
+                text-align: center;
+            }
+
+            .popup-content .close-btn {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                cursor: pointer;
+                font-size: 20px;
+            }
+        
         </style>
+        
     </head>
     <body> 
         <div class="container">
@@ -211,11 +300,21 @@
                 </div>
             </div>
         </div>
-    
+
+        <div id="eventDetailPopup" class="popup" style="display: none;">
+            <div class="popup-content">
+                <span onclick="closePopup()" class="close-btn">&times;</span>
+                <h3 id="popupEventName"></h3>
+                <p><strong>공연 종류:</strong> <span id="popupEventType"></span></p>
+                <p><strong>예매 날짜:</strong> <span id="popupEventDate"></span></p>
+                <p><strong>등록일:</strong> <span id="popupEventApply"></span></p>
+            </div>
+        </div>
+
     <script>
         let events = [];
 
-        fetch('concert.json')
+        fetch('..//concert.json')
             .then(response => response.json())
             .then(data => {
                 // JSON 데이터를 events 배열에 추가
@@ -304,23 +403,51 @@
             calendarBody.innerHTML = html;
             renderEvents();
          }
+
+        // 공연 상세 내용 팝업
+        function showEventDetails(event) {
+            document.getElementById('popupEventName').textContent = event.name;
+            document.getElementById('popupEventType').textContent = event.type;
+            document.getElementById('popupEventDate').textContent = event.date;
+            document.getElementById('popupEventApply').textContent = event.apply;
+            document.getElementById('eventDetailPopup').style.display = 'block';
+        }
+
+        // 팝업 닫기
+        function closePopup() {
+            document.getElementById('eventDetailPopup').style.display = 'none';
+        }
+
         // 이벤트 렌더링
         function renderEvents() {
             document.querySelectorAll('.calendar-day').forEach(cell => {
+                // 기존의 event-badge 요소를 제거
                 cell.querySelectorAll('.event-badge').forEach(badge => badge.remove());
+                
                 const date = cell.dataset.date;
                 
+                // 해당 날짜에 체크된 이벤트가 있는지 확인
                 events.filter(event => event.checked && event.date === date)
                     .forEach(event => {
+                        // 이벤트 배지 생성
                         const badge = document.createElement('div');
                         badge.className = 'event-badge';
-                        badge.setAttribute('data-type', event.type); // 🔥 타입 속성 추가
-                        badge.style.backgroundColor = colorMap[event.type] || '#cccccc'; // 🔥 색상 적용
+                        badge.setAttribute('data-type', event.type); // 이벤트 타입 속성 추가
+                        badge.style.backgroundColor = colorMap[event.type] || '#cccccc'; // 타입별 색상 적용
                         badge.textContent = `${event.type} - ${event.name}`;
+                        
+                        // 클릭 시 showEventDetails 호출 (event 객체 전달)
+                        badge.onclick = function() {
+                            showEventDetails(event); // event 객체 전달
+                        };
+                        
+                        // 배지를 셀에 추가
                         cell.appendChild(badge);
                     });
             });
         }
+
+
 
         // 이벤트 추가
         function addEvent() {
@@ -462,6 +589,7 @@
         populateYearMonthSelectors();
         updateCalendarHeader();
 
+        
 
         // 체크박스 토글
         function toggleEvent(eventId) {
