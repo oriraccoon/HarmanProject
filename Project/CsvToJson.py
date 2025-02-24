@@ -2,23 +2,22 @@ import csv
 import json
 import re
 
-# 날짜 포맷을 "2025년 3월 11일(화) 오후 6시"에서 "2025-03-11"로 변환하는 함수
 def format_date(date_string):
     match = re.match(r'(\d{4})년 (\d{1,2})월 (\d{1,2})일', date_string)
     if match:
         year = match.group(1)
-        month = str(int(match.group(2))).zfill(2)  # 두 자릿수로 월 만들기
-        day = str(int(match.group(3))).zfill(2)    # 두 자릿수로 일 만들기
-        return f"{year}-{month}-{day}"  # "YYYY-MM-DD" 형식
+        month = str(int(match.group(2))).zfill(2)
+        day = str(int(match.group(3))).zfill(2)
+        return f"{year}-{month}-{day}"
     return None
 
 def format_apply(date_string):
     match = re.match(r'(\d{4}).(\d{1,2}).(\d{1,2})', date_string)
     if match:
         year = match.group(1)
-        month = str(int(match.group(2))).zfill(2)  # 두 자릿수로 월 만들기
-        day = str(int(match.group(3))).zfill(2)    # 두 자릿수로 일 만들기
-        return f"{year}-{month}-{day}"  # "YYYY-MM-DD" 형식
+        month = str(int(match.group(2))).zfill(2)
+        day = str(int(match.group(3))).zfill(2)
+        return f"{year}-{month}-{day}"
     return None
 
 # CSV를 JSON으로 변환하는 함수
