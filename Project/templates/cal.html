@@ -1,0 +1,517 @@
+<!DOCTYPE html> 
+<html lang="ko"> 
+    <head>
+        <meta charset="UTF-8"> 
+        <title>공연 예매일 달력표시</title> 
+    <style>            
+            .container {
+                display: flex;
+                gap: 20px;
+                padding: 20px;
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+
+            .calendar {
+                flex: 3;
+                background: white;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+
+            .calendar-table {
+                width: 100%;
+                table-layout: fixed;
+                border-collapse: collapse;
+            }
+
+            .calendar-table th, 
+            .calendar-table td {
+                padding: 15px;
+                text-align: center;
+                border: 1px solid #ddd;
+                height: 100px;
+                vertical-align: top;
+                position: relative;
+            }
+            .calendar-table td {
+                width: 120px; /* 🔥 고정 너비 */
+                min-width: 120px;
+                max-width: 120px;
+                overflow: hidden;
+            }
+            .date-number {
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+
+            .event-badge {color: white; padding: 3px 6px; border-radius: 4px; font-size: 0.85em;
+                margin: 2px 0; text-align: left; text-overflow: ellipsis; white-space: nowrap;
+            overflow: hidden;}
+            .event-badge[data-type="뮤지컬"] { background: #2196F3; }
+            .event-badge[data-type="콘서트"] { background: #4CAF50; }
+            .event-badge[data-type="연극"] { background: #9C27B0; }
+            .event-badge[data-type="클래식/무용"] { background: #f1f3c1; }
+            .event-badge[data-type="아동/가족"] { background: #ff0396; }
+            .event-badge[data-type="스포츠"] { background: #FF9800; }
+            .event-badge[data-type="레저"] { background: #2b1a01; }
+            .event-badge[data-type="전시/행사"] { background: hsl(242, 100%, 28%); }
+
+
+            .sidebar {
+                flex: 1;
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+
+            .event-item {
+                margin: 10px 0;
+                padding: 10px;
+                background: white;
+                border-radius: 5px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            button {
+                background: #2196F3;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            .weekend {
+            background-color: #fff3e0 ;
+            }          
+            input[type="text"],
+            input[type="date"] {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                box-sizing: border-box;
+            }
+            #pagination {
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+                margin-top: 20px;
+            }
+
+            #pagination button {
+                background: none;
+                border: none;
+                font-size: 1rem;
+                color: #2196F3;
+                cursor: pointer;
+                padding: 5px 10px;
+            }
+
+            #pagination button:hover {
+                text-decoration: underline;
+            }
+            #monthSelector {
+                display: inline-block;
+                position: absolute;
+                background-color: white;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 15px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                z-index: 10;
+                font-family: 'Arial', sans-serif;
+            }
+
+            #monthSelector select {
+                margin: 10px;
+                padding: 8px;
+                border-radius: 5px;
+                border: 1px solid #ccc;
+                font-size: 16px; /* 글씨 크기 크게 설정 */
+                font-family: 'Arial', sans-serif;
+            }
+
+            #currentMonth {
+                font-size: 30px; /* 크기를 키워서 눈에 잘 띄게 */
+                font-weight: bold;
+                cursor: pointer;
+            }
+
+        </style>
+    </head>
+    <body> 
+        <div class="container">
+            <div class="calendar">
+                <div class="calendar-header">
+                    <button onclick="changeMonth(-1)">◀</button>
+                    <button onclick="changeMonth(1)">▶</button>
+                    <div id="currentMonth" onclick="toggleMonthSelector()" style="cursor: pointer;"></div>
+                    <div id="monthSelector" style="display: none;">
+                        <select id="yearSelect" onchange="updateCalendar()">
+                            <!-- 연도 옵션은 JavaScript로 동적으로 추가합니다 -->
+                        </select>
+                        <select id="monthSelect" onchange="updateCalendar()">
+                            <!-- 월 옵션도 JavaScript로 동적으로 추가합니다 -->
+                        </select>
+                    </div>
+                </div>
+                
+                <table class="calendar-table" id="calendarTable">
+                    <thead>
+                        <tr>
+                            <th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th>
+                        </tr>
+                    </thead>
+                    <tbody id="calendarBody"></tbody>
+                </table>
+            </div>
+    
+            <div class="sidebar">
+                <h3>공연 목록 (최대 20개)</h3>
+                
+                <div class="event-list" id="eventList">
+                </div>
+                <div id="pagination" style="margin-top: 20px;"></div>
+                <div>
+                    <h4>필터</h4>
+                    <label for="filterDate">날짜:</label>
+                    <input type="date" id="filterDate" onchange="applyFilters()">
+                    
+                    <label for="filterType">공연 종류:</label>
+                    <select id="filterType" onchange="applyFilters()">
+                        <option value="">전체</option>
+                        <option value="뮤지컬">뮤지컬</option>
+                        <option value="콘서트">콘서트</option>
+                        <option value="연극">연극</option>
+                        <option value="클래식/무용">클래식/무용</option>
+                        <option value="아동/가족">아동/가족</option>
+                        <option value="스포츠">스포츠</option>
+                        <option value="레저">레저</option>
+                        <option value="전시/행사">전시/행사</option>
+                    </select>
+                </div>
+                <div style="margin-top: 20px;">
+                    <h4>새 공연 추가</h4>
+                    <input type="text" id="eventType" placeholder="공연 종류">
+                    <input type="text" id="eventName" placeholder="공연명">
+                    <input type="date" id="eventDate">
+                    <button onclick="addEvent()">추가</button>
+                </div>
+    
+                <div style="margin-top: 20px;">
+                    <button onclick="saveCheckState()">체크 상태 저장</button>
+                    <button onclick="loadCheckState()">저장된 목록 불러오기</button>
+                </div>
+            </div>
+        </div>
+    
+    <script>
+        let events = [];
+
+        fetch('concert.json')
+            .then(response => response.json())
+            .then(data => {
+                // JSON 데이터를 events 배열에 추가
+                data.forEach(concert => {
+                    events.push({
+                        id: Date.now() + Math.random(), // 고유 ID 생성
+                        type: concert["구분"],
+                        name: concert["﻿이름"],
+                        date: concert["예매날짜"],
+                        checked: false // 초기 상태를 체크된 상태로
+                    });
+                });
+
+                // 이벤트 목록과 달력 업데이트
+                updateEventList();
+                generateCalendar();
+            })
+            .catch(error => console.error('데이터를 불러오는 중 오류 발생:', error));
+
+    
+
+        
+
+        let currentDate = new Date();
+        const MAX_EVENTS = 20;
+        const colorMap = {
+        '뮤지컬': '#2196F3',
+        '콘서트': '#4CAF50',
+        '연극': '#9C27B0',
+        '클래식/무용': '#f1f3c1',
+        '아동/가족': '#ff0396',
+        '스포츠': '#009688',
+        '레저': '#2b1a01',
+        '전시/행사': 'hsl(242, 100%, 28%)'
+        };
+          // 달력 생성
+          function generateCalendar() {
+            const calendarBody = document.getElementById('calendarBody');
+            calendarBody.innerHTML = '';
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            document.getElementById('currentMonth').textContent = 
+                `${year}년 ${month + 1}월`;
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const prevMonthLastDay = new Date(year, month, 0).getDate();
+            const startDay = firstDay.getDay();
+            
+            let date = 1;
+            let html = '';
+
+            for (let i = 0; i < 6; i++) {
+                html += '<tr>';
+                for (let j = 0; j < 7; j++) {
+                    const dayClass = j === 0 || j === 6 ? 'weekend' : ''; // 주주말 클래스 추가
+
+                    if (i === 0 && j < startDay) {
+                        const prevDate = prevMonthLastDay - (startDay - j - 1);
+                        const formattedDate = `${year}-${String(month).padStart(2,'0')}-${String(prevDate).padStart(2,'0')}`;
+                        html += `
+                            <td class="calendar-day ${dayClass}" data-date="${formattedDate}">
+                                <div class="date-number">${prevDate}</div>
+                            </td>`;
+                    } else if (date > lastDay.getDate()) {
+                        const nextDate = date - lastDay.getDate();
+                        const formattedDate = `${year}-${String(month+2).padStart(2,'0')}-${String(nextDate).padStart(2,'0')}`;
+                        html += `
+                            <td class="calendar-day ${dayClass}" data-date="${formattedDate}">
+                                <div class="date-number">${nextDate}</div>
+                            </td>`;
+                        date++;
+                    } else {
+                        const formattedDate = `${year}-${String(month+1).padStart(2,'0')}-${String(date).padStart(2,'0')}`;
+                        html += `
+                            <td class="calendar-day ${dayClass}" data-date="${formattedDate}">
+                                <div class="date-number">${date}</div>
+                            </td>`;
+                        date++;
+                    }
+                }
+                html += '</tr>';
+                if (date > lastDay.getDate()) break;
+            }
+
+            calendarBody.innerHTML = html;
+            renderEvents();
+         }
+        // 이벤트 렌더링
+        function renderEvents() {
+            document.querySelectorAll('.calendar-day').forEach(cell => {
+                cell.querySelectorAll('.event-badge').forEach(badge => badge.remove());
+                const date = cell.dataset.date;
+                
+                events.filter(event => event.checked && event.date === date)
+                    .forEach(event => {
+                        const badge = document.createElement('div');
+                        badge.className = 'event-badge';
+                        badge.setAttribute('data-type', event.type); // 🔥 타입 속성 추가
+                        badge.style.backgroundColor = colorMap[event.type] || '#cccccc'; // 🔥 색상 적용
+                        badge.textContent = `${event.type} - ${event.name}`;
+                        cell.appendChild(badge);
+                    });
+            });
+        }
+
+        // 이벤트 추가
+        function addEvent() {
+            const newEvent = {
+                id: Date.now(),
+                type: document.getElementById('eventType').value,
+                name: document.getElementById('eventName').value,
+                date: document.getElementById('eventDate').value,
+                checked: false
+            };
+
+            if (!newEvent.type || !newEvent.name || !newEvent.date) {
+                alert('모든 필드를 입력해주세요');
+                return;
+            }
+
+            if (events.length >= MAX_EVENTS) {
+                alert('최대 20개까지 추가 가능합니다');
+                return;
+            }
+
+            events.push(newEvent);
+            updateEventList();
+            generateCalendar();
+            clearInputs();
+        }
+        let currentPage = 1; // 현재 페이지 번호
+        const eventsPerPage = 10; // 한 페이지에 보여줄 공연 개수
+
+        // 필터링된 이벤트 목록 업데이트
+        function updateEventList(filteredEvents = events) {
+            const eventList = document.getElementById('eventList');
+            const startIdx = (currentPage - 1) * eventsPerPage;
+            const endIdx = currentPage * eventsPerPage;
+            
+            const paginatedEvents = filteredEvents.slice(startIdx, endIdx);
+            
+            eventList.innerHTML = paginatedEvents.map(event => `
+                <div class="event-item">
+                    <label>
+                        <input type="checkbox" ${event.checked ? 'checked' : ''} onchange="toggleEvent(${event.id})">
+                        ${event.date} <${event.type}>${event.name}
+                    </label>
+                    <button onclick="deleteEvent(${event.id})">삭제</button>
+                </div>
+            `).join('');
+
+            // 페이지네이션 표시
+            updatePagination(filteredEvents.length);
+        }
+
+        // 페이지네이션 업데이트
+        function updatePagination(totalEvents) {
+            const pagination = document.getElementById('pagination');
+            const totalPages = Math.ceil(totalEvents / eventsPerPage);
+            pagination.innerHTML = '';
+            
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.onclick = () => changePage(i);
+                pagination.appendChild(pageButton);
+            }
+        }
+
+        // 페이지 변경
+        function changePage(pageNumber) {
+            currentPage = pageNumber;
+            applyFilters();
+        }
+
+        // 필터 적용 함수 (필터링 후 페이지 변경)
+        function applyFilters() {
+            const filterDate = document.getElementById('filterDate').value;
+            const filterType = document.getElementById('filterType').value;
+
+            const filteredEvents = events.filter(event => {
+                const matchesDate = filterDate ? event.date === filterDate : true;
+                const matchesType = filterType ? event.type === filterType : true;
+                return matchesDate && matchesType;
+            });
+
+            updateEventList(filteredEvents);
+        }
+
+        // 현재 달력의 연도와 월을 표시
+        function updateCalendarHeader() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth() + 1; // 1부터 12까지 표시
+            document.getElementById('currentMonth').textContent = `${year}년 ${month}월`;
+        }
+
+        // 월 드롭다운 표시 토글
+        function toggleMonthSelector() {
+            const selector = document.getElementById('monthSelector');
+            selector.style.display = selector.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // 연도 및 월 드롭다운 값 변경 시 달력 업데이트
+        function updateCalendar() {
+            const year = document.getElementById('yearSelect').value;
+            const month = document.getElementById('monthSelect').value - 1; // 0부터 11까지
+            currentDate.setFullYear(year);
+            currentDate.setMonth(month);
+            generateCalendar();
+            updateCalendarHeader();
+            toggleMonthSelector(); // 드롭다운 숨기기
+        }
+
+        // 연도와 월 옵션 동적 추가
+        function populateYearMonthSelectors() {
+            const yearSelect = document.getElementById('yearSelect');
+            const monthSelect = document.getElementById('monthSelect');
+            
+            const currentYear = currentDate.getFullYear();
+            
+            // 연도 옵션 생성
+            for (let year = currentYear - 5; year <= currentYear + 5; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = `${year}년`;
+                if (year === currentYear) option.selected = true;
+                yearSelect.appendChild(option);
+            }
+
+            // 월 옵션 생성
+            for (let month = 1; month <= 12; month++) {
+                const option = document.createElement('option');
+                option.value = month;
+                option.textContent = `${month}월`;
+                if (month === currentDate.getMonth() + 1) option.selected = true;
+                monthSelect.appendChild(option);
+            }
+        }
+
+// 초기 실행
+populateYearMonthSelectors();
+updateCalendarHeader();
+
+
+        // 체크박스 토글
+        function toggleEvent(eventId) {
+            const event = events.find(e => e.id === eventId);
+            event.checked = !event.checked;
+            renderEvents();
+        }
+
+        // 이벤트 삭제
+        function deleteEvent(eventId) {
+            events = events.filter(e => e.id !== eventId);
+            updateEventList();
+            generateCalendar();
+        }
+
+        // 날짜 형식 변환
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        // 입력 필드 초기화
+        function clearInputs() {
+            document.getElementById('eventType').value = '';
+            document.getElementById('eventName').value = '';
+            document.getElementById('eventDate').value = '';
+        }
+
+        // 월 변경
+        function changeMonth(offset) {
+            currentDate.setMonth(currentDate.getMonth() + offset);
+            generateCalendar();
+        }
+
+        // 체크 상태 저장/불러오기
+        function saveCheckState() {
+            const checkedEvents = events.filter(e => e.checked).map(e => e.id);
+            localStorage.setItem('checkedEvents', JSON.stringify(checkedEvents));
+            alert('저장 완료!');
+        }
+
+        function loadCheckState() {
+            const checkedIds = JSON.parse(localStorage.getItem('checkedEvents')) || [];
+            events.forEach(event => {
+                event.checked = checkedIds.includes(event.id);
+            });
+            updateEventList();
+            generateCalendar();
+            alert('불러오기 완료!');
+        }
+
+        // 초기 실행
+        generateCalendar();
+        updateEventList();
+    </script>
+    </body>
+</html>
