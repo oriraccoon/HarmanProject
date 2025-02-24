@@ -126,8 +126,13 @@
             }
         
             /* 주말 셀 강조 */
-            .weekend {
+            .sunday {
                 background-color: #ffebee;
+                font-weight: bold;
+            }
+            /* 주말 셀 강조 */
+            .saturday {
+                background-color: #e2e7fa;
                 font-weight: bold;
             }
         
@@ -202,32 +207,51 @@
                 cursor: pointer;
             }
 
-            .popup {
-                display: none;
+            /* 모달 팝업 배경 */
+            .modal {
+                display: none; /* 기본적으로 숨김 */
                 position: fixed;
+                z-index: 1000; /* 페이지 콘텐츠 위에 표시 */
                 top: 0;
-                right: 0;
-                bottom: 0;
                 left: 0;
-                background-color: rgba(0, 0, 0, 0.5);
-                z-index: 100;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5); /* 배경을 흐리게 */
             }
 
-            .popup-content {
-                background: white;
+            /* 모달 콘텐츠 박스 */
+            .modal-content {
+                background-color: white;
+                margin: 15% auto;
                 padding: 20px;
-                border-radius: 5px;
-                width: 400px;
-                text-align: center;
+                border-radius: 10px;
+                width: 80%; /* 필요에 따라 크기 조절 */
+                max-width: 600px; /* 최대 너비 */
+                position: relative;
             }
 
-            .popup-content .close-btn {
+            /* 닫기 버튼 스타일 */
+            .close-btn {
                 position: absolute;
                 top: 10px;
                 right: 10px;
+                font-size: 24px;
                 cursor: pointer;
-                font-size: 20px;
+                color: #000;
             }
+
+            .close-btn:hover {
+                color: #f44336; /* 마우스를 올리면 색상 변경 */
+            }
+            .calendar-day.other-month .date-number {
+                color: #999;
+                opacity: 0.4;
+            }
+            .calendar-day.other-month.weekend {
+                background-color: #ffebee;
+                opacity: 0.4;
+            }
+
         
         </style>
         
@@ -286,35 +310,29 @@
                         <option value="전시/행사">전시/행사</option>
                     </select>
                 </div>
-                <div style="margin-top: 20px;">
-                    <h4>새 공연 추가</h4>
-                    <input type="text" id="eventType" placeholder="공연 종류">
-                    <input type="text" id="eventName" placeholder="공연명">
-                    <input type="date" id="eventDate">
-                    <button onclick="addEvent()">추가</button>
-                </div>
     
                 <div style="margin-top: 20px;">
                     <button onclick="saveCheckState()">체크 상태 저장</button>
                     <button onclick="loadCheckState()">저장된 목록 불러오기</button>
                 </div>
             </div>
-        </div>
-
-        <div id="eventDetailPopup" class="popup" style="display: none;">
-            <div class="popup-content">
-                <span onclick="closePopup()" class="close-btn">&times;</span>
-                <h3 id="popupEventName"></h3>
-                <p><strong>공연 종류:</strong> <span id="popupEventType"></span></p>
-                <p><strong>예매 날짜:</strong> <span id="popupEventDate"></span></p>
-                <p><strong>등록일:</strong> <span id="popupEventApply"></span></p>
+            <!-- 모달 팝업 구조 -->
+            <div id="eventDetailPopup" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span onclick="closePopup()" class="close-btn">&times;</span>
+                    <h3 id="popupEventName"></h3>
+                    <p><strong>공연 종류:</strong> <span id="popupEventType"></span></p>
+                    <p><strong>예매 날짜:</strong> <span id="popupEventDate"></span></p>
+                    <p><strong>등록일:</strong> <span id="popupEventApply"></span></p>
+                    <p><strong>링크:</strong> <span id="popupEventLink"></span></p>
+                </div>
             </div>
         </div>
 
     <script>
         let events = [];
 
-        fetch('..//concert.json')
+        fetch('..//static//concert.json')
             .then(response => response.json())
             .then(data => {
                 // JSON 데이터를 events 배열에 추가
@@ -325,7 +343,8 @@
                         name: concert["﻿이름"],
                         date: concert["예매날짜"],
                         apply: concert["등록일"],
-                        checked: false // 초기 상태를 체크된 상태로
+                        link: concert["링크"],
+                        checked: false
                     });
                 });
 
@@ -348,105 +367,110 @@
         '레저': '#2b1a01',
         '전시/행사': 'hsl(242, 100%, 28%)'
         };
-          // 달력 생성
-          function generateCalendar() {
-            const calendarBody = document.getElementById('calendarBody');
-            calendarBody.innerHTML = '';
-            
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            
-            document.getElementById('currentMonth').textContent = 
-                `${year}년 ${month + 1}월`;
+        // 달력 생성
+        function generateCalendar() {
+        const calendarBody = document.getElementById('calendarBody');
+        calendarBody.innerHTML = '';
+        
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        
+        document.getElementById('currentMonth').textContent = 
+            `${year}년 ${month + 1}월`;
 
-            const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-            const prevMonthLastDay = new Date(year, month, 0).getDate();
-            const startDay = firstDay.getDay();
-            
-            let date = 1;
-            let html = '';
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const prevMonthLastDay = new Date(year, month, 0).getDate();
+        const startDay = firstDay.getDay();
+        
+        let date = 1;
+        let html = '';
 
-            for (let i = 0; i < 6; i++) {
-                html += '<tr>';
-                for (let j = 0; j < 7; j++) {
-                    const dayClass = j === 0 || j === 6 ? 'weekend' : ''; // 주주말 클래스 추가
+        for (let i = 0; i < 6; i++) {
+            html += '<tr>';
+            for (let j = 0; j < 7; j++) {
+                const dayClass = j === 0 ? 'sunday' : (j === 6 ? 'saturday' : '');  // 일요일은 sunday, 토요일은 saturday로 구분
+                let cellClass ='calendar-day' ;
 
-                    if (i === 0 && j < startDay) {
-                        const prevDate = prevMonthLastDay - (startDay - j - 1);
-                        const formattedDate = `${year}-${String(month).padStart(2,'0')}-${String(prevDate).padStart(2,'0')}`;
-                        html += `
-                            <td class="calendar-day ${dayClass}" data-date="${formattedDate}">
-                                <div class="date-number">${prevDate}</div>
-                            </td>`;
-                    } else if (date > lastDay.getDate()) {
-                        const nextDate = date - lastDay.getDate();
-                        const formattedDate = `${year}-${String(month+2).padStart(2,'0')}-${String(nextDate).padStart(2,'0')}`;
-                        html += `
-                            <td class="calendar-day ${dayClass}" data-date="${formattedDate}">
-                                <div class="date-number">${nextDate}</div>
-                            </td>`;
-                        date++;
-                    } else {
-                        const formattedDate = `${year}-${String(month+1).padStart(2,'0')}-${String(date).padStart(2,'0')}`;
-                        html += `
-                            <td class="calendar-day ${dayClass}" data-date="${formattedDate}">
-                                <div class="date-number">${date}</div>
-                            </td>`;
-                        date++;
-                    }
+                if (i === 0 && j < startDay) {
+                    // 이전 달 날짜
+                    const prevDate = prevMonthLastDay - (startDay - j - 1);
+                    cellClass += ' other-month'; // other-month 클래스 추가
+                    html += `
+                        <td class="${cellClass} ${dayClass}" 
+                            data-date="${year}-${String(month).padStart(2,'0')}-${String(prevDate).padStart(2,'0')}">
+                            <div class="date-number">${prevDate}</div>
+                        </td>`;
                 }
-                html += '</tr>';
-                if (date > lastDay.getDate()) break;
+                else if (date > lastDay.getDate()) {
+                    // 다음 달 날짜
+                    const nextDate = date - lastDay.getDate();
+                    cellClass += ' other-month'; // other-month 클래스 추가
+                    html += `
+                        <td class="${cellClass} ${dayClass}" 
+                            data-date="${year}-${String(month+2).padStart(2,'0')}-${String(nextDate).padStart(2,'0')}">
+                            <div class="date-number">${nextDate}</div>
+                        </td>`;
+                    date++;
+                } 
+                else {
+                    // 현재 달 날짜
+                    html += `
+                        <td class="${cellClass} ${dayClass}" 
+                            data-date="${year}-${String(month+1).padStart(2,'0')}-${String(date).padStart(2,'0')}">
+                            <div class="date-number">${date}</div>
+                        </td>`;
+                    date++;
+                }
             }
+            html += '</tr>';
+            if (date > lastDay.getDate()) break;
+        }
 
-            calendarBody.innerHTML = html;
-            renderEvents();
-         }
+        calendarBody.innerHTML = html;
+        renderEvents();
+        }
 
-        // 공연 상세 내용 팝업
         function showEventDetails(event) {
             document.getElementById('popupEventName').textContent = event.name;
             document.getElementById('popupEventType').textContent = event.type;
             document.getElementById('popupEventDate').textContent = event.date;
             document.getElementById('popupEventApply').textContent = event.apply;
-            document.getElementById('eventDetailPopup').style.display = 'block';
+            document.getElementById('popupEventLink').textContent = event.link;
+            const linkElement = document.getElementById('popupEventLink');
+            if (event.link && event.link.trim() !== "") {
+                linkElement.innerHTML = `<a href="${event.link}" target="_blank" style="color: #007BFF; text-decoration: underline;">${event.link}</a>`;
+            } else {
+                linkElement.innerHTML = "링크 없음";
+            }
+            document.getElementById('eventDetailPopup').style.display = 'block'; // 모달 띄우기
         }
 
         // 팝업 닫기
         function closePopup() {
-            document.getElementById('eventDetailPopup').style.display = 'none';
+            document.getElementById('eventDetailPopup').style.display = 'none'; // 모달 숨기기
         }
 
-        // 이벤트 렌더링
+
         function renderEvents() {
             document.querySelectorAll('.calendar-day').forEach(cell => {
-                // 기존의 event-badge 요소를 제거
                 cell.querySelectorAll('.event-badge').forEach(badge => badge.remove());
-                
+
                 const date = cell.dataset.date;
-                
-                // 해당 날짜에 체크된 이벤트가 있는지 확인
+
                 events.filter(event => event.checked && event.date === date)
                     .forEach(event => {
-                        // 이벤트 배지 생성
                         const badge = document.createElement('div');
                         badge.className = 'event-badge';
-                        badge.setAttribute('data-type', event.type); // 이벤트 타입 속성 추가
-                        badge.style.backgroundColor = colorMap[event.type] || '#cccccc'; // 타입별 색상 적용
+                        badge.setAttribute('data-type', event.type);
+                        badge.style.backgroundColor = colorMap[event.type] || '#cccccc';
                         badge.textContent = `${event.type} - ${event.name}`;
-                        
-                        // 클릭 시 showEventDetails 호출 (event 객체 전달)
-                        badge.onclick = function() {
-                            showEventDetails(event); // event 객체 전달
-                        };
-                        
-                        // 배지를 셀에 추가
+                        badge.onclick = () => showEventDetails(event);
+
                         cell.appendChild(badge);
                     });
             });
         }
-
 
 
         // 이벤트 추가
@@ -477,7 +501,6 @@
         let currentPage = 1; // 현재 페이지 번호
         const eventsPerPage = 10; // 한 페이지에 보여줄 공연 개수
 
-        // 필터링된 이벤트 목록 업데이트
         function updateEventList(filteredEvents = events) {
             const eventList = document.getElementById('eventList');
             const startIdx = (currentPage - 1) * eventsPerPage;
@@ -495,9 +518,9 @@
                 </div>
             `).join('');
 
-            // 페이지네이션 표시
             updatePagination(filteredEvents.length);
         }
+
 
         // 페이지네이션 업데이트
         function updatePagination(totalEvents) {
@@ -590,13 +613,15 @@
         updateCalendarHeader();
 
         
-
-        // 체크박스 토글
         function toggleEvent(eventId) {
             const event = events.find(e => e.id === eventId);
-            event.checked = !event.checked;
-            renderEvents();
+            if (event) {
+                event.checked = !event.checked;
+                updateEventList();
+                renderEvents();
+            }
         }
+
 
         // 이벤트 삭제
         function deleteEvent(eventId) {
@@ -623,26 +648,62 @@
             generateCalendar();
         }
 
-        // 체크 상태 저장/불러오기
+        // 체크 상태 저장
         function saveCheckState() {
-            const checkedEvents = events.filter(e => e.checked).map(e => e.id);
-            localStorage.setItem('checkedEvents', JSON.stringify(checkedEvents));
-            alert('저장 완료!');
-        }
-
-        function loadCheckState() {
-            const checkedIds = JSON.parse(localStorage.getItem('checkedEvents')) || [];
-            events.forEach(event => {
-                event.checked = checkedIds.includes(event.id);
+            fetch('/save_checked_state', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(events) // 전체 이벤트 상태 전송
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || '저장 완료!');
+            })
+            .catch(error => {
+                console.error('저장 실패:', error);
+                alert('저장 실패');
             });
-            updateEventList();
-            generateCalendar();
-            alert('불러오기 완료!');
+        }
+        // 체크 상태 불러오기기
+        function loadCheckState() {
+            fetch('/get_events')
+                .then(response => response.json())
+                .then(data => {
+                    events = data.map(concert => ({
+                        id: Date.now() + Math.random(), // 고유 ID 추가
+                        name: concert["﻿이름"],
+                        type: concert["구분"],
+                        date: concert["예매날짜"],
+                        apply: concert["등록일"],
+                        link: concert["링크"],
+                        checked: concert["checked"] || false
+                    }));
+
+                    updateEventList();
+                    renderEvents();
+                    alert('불러오기 완료!');
+                })
+                .catch(error => {
+                    console.error('불러오기 실패:', error);
+                    alert('불러오기 실패');
+                });
         }
 
         // 초기 실행
         generateCalendar();
         updateEventList();
+
+        window.onload = function() {
+            fetch('/get_events')
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data); // 데이터를 콘솔에 출력하거나 필요한 곳에 표시
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        };
+
     </script>
     </body>
 </html>

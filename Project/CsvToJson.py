@@ -23,9 +23,9 @@ def format_apply(date_string):
 # CSV를 JSON으로 변환하는 함수
 def csvTojson():
     # CSV 파일 경로
-    csv_file = 'mycode\Project\concert.csv'
+    csv_file = 'concert.csv'
     # 출력할 JSON 파일 경로
-    json_file = 'mycode\Project\\templates\concert.json'
+    json_file = 'static\concert.json'
 
     # CSV 파일 읽기
     with open(csv_file, mode='r', encoding='utf-8') as file:
@@ -39,9 +39,13 @@ def csvTojson():
         if '등록일' in concert:
             concert['등록일'] = format_apply(concert['등록일'])
 
+        concert['checked'] = False
+
     # JSON 파일로 저장
     with open(json_file, mode='w', encoding='utf-8') as file:
         json.dump(data, file, ensure_ascii=False, indent=4)
+
+
 
     print(f"JSON 파일이 생성되었습니다: {json_file}")
 
