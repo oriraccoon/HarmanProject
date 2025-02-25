@@ -6,6 +6,10 @@ from flask import Flask, render_template, request, jsonify
 import json
 import os
 
+# 이 상태로는 돌려도 안됨!! 경로 오류
+# 현재 json_file_path는 배포 파일 기준
+# 파이썬으로 구동하려면 ../삭제
+
 # Flask 로그 설정
 logging.basicConfig(level=logging.DEBUG)  # 모든 로그 레벨을 디버그로 설정
 logger = logging.getLogger(__name__)
