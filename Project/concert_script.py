@@ -168,6 +168,7 @@ while True:
                 "등록일": format_apply(regist), 
                 "링크": link,
                 "checked": False
+                "actived": True
             })
             with open(json_file_path, 'w', encoding='utf-8') as file:
                 json.dump(read_data, file, ensure_ascii=False, indent=4)
