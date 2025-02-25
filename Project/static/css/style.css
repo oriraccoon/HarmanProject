@@ -99,6 +99,10 @@
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
+#listname {
+    background: #ffffff;
+}
+
 .event-item:hover {
     background-color: #f1f1f1;
 }

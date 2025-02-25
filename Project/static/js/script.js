@@ -12,7 +12,8 @@
                     date: concert["예매날짜"],
                     apply: concert["등록일"],
                     link: concert["링크"],
-                    checked: false
+                    checked: false,
+                    actived: concert["actived"]
                 });
             });
 
@@ -123,10 +124,11 @@
     function renderEvents() {
         document.querySelectorAll('.calendar-day').forEach(cell => {
             cell.querySelectorAll('.event-badge').forEach(badge => badge.remove());
-
+    
             const date = cell.dataset.date;
-
-            events.filter(event => event.checked && event.date === date)
+    
+            // actived가 true인 이벤트만 필터링
+            events.filter(event => event.checked && event.date === date && event.actived)
                 .forEach(event => {
                     const badge = document.createElement('div');
                     badge.className = 'event-badge';
@@ -134,12 +136,11 @@
                     badge.style.backgroundColor = colorMap[event.type] || '#cccccc';
                     badge.textContent = `${event.type} - ${event.name}`;
                     badge.onclick = () => showEventDetails(event);
-
+    
                     cell.appendChild(badge);
                 });
         });
     }
-
 
     // 이벤트 추가
     function addEvent() {
@@ -169,13 +170,15 @@
     let currentPage = 1; // 현재 페이지 번호
     const eventsPerPage = 10; // 한 페이지에 보여줄 공연 개수
 
+    // 이벤트 목록 업데이트 함수
     function updateEventList(filteredEvents = events) {
         const eventList = document.getElementById('eventList');
         const startIdx = (currentPage - 1) * eventsPerPage;
         const endIdx = currentPage * eventsPerPage;
-        
-        const paginatedEvents = filteredEvents.slice(startIdx, endIdx);
-        
+        const activedEvents = filteredEvents.filter(event => event.actived !== false); // actived가 true인 이벤트만 필터링
+    
+        const paginatedEvents = activedEvents.slice(startIdx, endIdx);
+    
         eventList.innerHTML = paginatedEvents.map(event => `
             <div class="event-item">
                 <label>
@@ -185,8 +188,8 @@
                 <button onclick="deleteEvent(${event.id})">삭제</button>
             </div>
         `).join('');
-
-        updatePagination(filteredEvents.length);
+    
+        updatePagination(activedEvents.length); // actived가 true인 이벤트 갯수로 페이지네이션 업데이트
     }
 
 
@@ -280,6 +283,26 @@
     populateYearMonthSelectors();
     updateCalendarHeader();
 
+    // 전체 선택/해제 기능
+    function toggleSelectAll() {
+        const selectAllButton = document.getElementById('selectAll');
+        
+        // 모든 이벤트가 선택된 상태인지 확인
+        const allChecked = events.every(event => event.checked); // 모든 이벤트가 체크되었으면 true, 아니면 false
+        
+        // 버튼 텍스트 변경
+        selectAllButton.innerText = allChecked ? '전체 선택' : '전체 해제';
+        
+        // 전체 선택 또는 해제
+        events.forEach(event => {
+            event.checked = !allChecked; // 모든 이벤트가 체크되었으면 해제, 아니면 선택
+        });
+        
+        updateEventList(); // 이벤트 목록 업데이트
+        renderEvents(); // 달력에 이벤트 표시
+    }
+
+
 
     function toggleEvent(eventId) {
         const event = events.find(e => e.id === eventId);
@@ -290,12 +313,19 @@
         }
     }
 
-
-    // 이벤트 삭제
+    // 이벤트 삭제 (삭제 시 actived 값을 false로 설정)
     function deleteEvent(eventId) {
+        const event = events.find(e => e.id === eventId);
+        if (event) {
+            event.actived = false; // 삭제된 이벤트는 actived 값을 false로 설정
+        }
+
+        saveLogic();
+        // 이벤트 리스트에서 삭제
         events = events.filter(e => e.id !== eventId);
-        updateEventList();
-        generateCalendar();
+
+        updateEventList(); // 업데이트된 이벤트 목록 반영
+        generateCalendar(); // 달력 업데이트
     }
 
     // 날짜 형식 변환
@@ -314,6 +344,14 @@
     function changeMonth(offset) {
         currentDate.setMonth(currentDate.getMonth() + offset);
         generateCalendar();
+    }
+
+    function saveLogic(){
+        fetch('/save_checked_state', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(events) // 전체 이벤트 상태 전송
+        })
     }
 
     // 체크 상태 저장
@@ -344,8 +382,9 @@
                     date: concert["예매날짜"],
                     apply: concert["등록일"],
                     link: concert["링크"],
-                    checked: concert["checked"] || false
-                }));
+                    checked: concert["checked"] || false,
+                    actived: concert["actived"] && true // actived가 true일 때만 로드
+                }))
 
                 updateEventList();
                 renderEvents();
@@ -360,14 +399,3 @@
     // 초기 실행
     generateCalendar();
     updateEventList();
-
-    window.onload = function() {
-        fetch('/get_events')
-            .then(response => response.json())
-            .then(data => {
-                console.log(data); // 데이터를 콘솔에 출력하거나 필요한 곳에 표시
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    };

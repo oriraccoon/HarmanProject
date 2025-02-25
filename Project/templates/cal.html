@@ -33,12 +33,9 @@
             </div>
     
             <div class="sidebar">
-                <h3>공연 목록 (최대 20개)</h3>
-                
-                <div class="event-list" id="eventList">
-                </div>
-                <div id="pagination" style="margin-top: 20px;"></div>
                 <div>
+                    
+
                     <h4>필터</h4>
                     <label for="filterApply">등록일:</label>
                     <input type="date" id="filterApply" onchange="applyFilters()">
@@ -58,9 +55,19 @@
                         <option value="레저">레저</option>
                         <option value="전시/행사">전시/행사</option>
                     </select>
+                    <br></br>
+                    <div align="center">
+                        <button id="selectAll" onclick="toggleSelectAll()">전체 선택</button>
+                    </div>
                 </div>
-    
-                <div style="margin-top: 20px;">
+
+                <h3 align="center" id="listname">공연 목록 (최대 20개)</h3>
+                
+                <div class="event-list" id="eventList">
+                </div>
+                <div id="pagination" style="margin-top: 20px;"></div>
+                
+                <div align="center" style="margin-top: 20px;">
                     <button onclick="saveCheckState()">체크 상태 저장</button>
                     <button onclick="loadCheckState()">저장된 목록 불러오기</button>
                 </div>

@@ -5,7 +5,7 @@ a = Analysis(
     ['harman_flask.py'],
     pathex=[],
     binaries=[],
-    datas=[('templates', 'templates'), ('static', 'static')],
+    datas=[('templates/cal.html', 'templates'), ('static/js/script.js', 'static/js'), ('static/css/style.css', 'static/css')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
