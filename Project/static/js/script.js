@@ -12,7 +12,8 @@
                     date: concert["예매날짜"],
                     apply: concert["등록일"],
                     link: concert["링크"],
-                    checked: false
+                    checked: false,
+                     actived: concert["actived"]
                 });
             });
 
