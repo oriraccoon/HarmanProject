@@ -13,7 +13,7 @@
                     apply: concert["등록일"],
                     link: concert["링크"],
                     checked: false,
-                     actived: concert["actived"]
+                    actived: concert["actived"]
                 });
             });
 
