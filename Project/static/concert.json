@@ -14,7 +14,7 @@
         "예매날짜": "2025-02-26",
         "등록일": "2025-02-24",
         "링크": "https://ticket.interpark.com/webzine/paper/TPNoticeView.asp?bbsno=34&pageno=1&stext=&no=54582&groupno=54582&seq=0&KindOfGoods=TICKET",
-        "checked": false,
+        "checked": true,
         "actived": true
     },
     {
@@ -23,7 +23,7 @@
         "예매날짜": "2025-02-28",
         "등록일": "2025-02-21",
         "링크": "https://ticket.interpark.com/webzine/paper/TPNoticeView.asp?bbsno=34&pageno=1&stext=&no=54581&groupno=54581&seq=0&KindOfGoods=TICKET",
-        "checked": false,
+        "checked": true,
         "actived": true
     },
     {
