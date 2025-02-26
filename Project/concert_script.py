@@ -167,7 +167,7 @@ while True:
                 "예매날짜": format_date(ticket), 
                 "등록일": format_apply(regist), 
                 "링크": link,
-                "checked": False
+                "checked": False,
                 "actived": True
             })
             with open(json_file_path, 'w', encoding='utf-8') as file:
