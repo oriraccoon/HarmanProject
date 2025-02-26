@@ -107,7 +107,7 @@
         document.getElementById('popupEventLink').textContent = event.link;
         const linkElement = document.getElementById('popupEventLink');
         if (event.link && event.link.trim() !== "") {
-            linkElement.innerHTML = `<a href="${event.link}" target="_blank" style="color: #007BFF; text-decoration: underline;">${event.link}</a>`;
+            linkElement.innerHTML = `<a href="${event.link}" target="_blank" style="color: #007BFF; text-decoration: underline;">페이지로 이동</a>`;
         } else {
             linkElement.innerHTML = "링크 없음";
         }
