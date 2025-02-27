@@ -2,7 +2,7 @@ name: Fetch Concert Crawling
 
 on:
   schedule:
-    - cron: "*/5 * * * *"  # 매 5분마다 실행
+    - cron: "*/10 * * * *"  # 매 10분마다 실행
   workflow_dispatch:  # 수동 실행 가능
   push:
     branches: 
@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: 저장소 체크아웃
-        uses: actions/checkout@v3  # 저장소를 체크아웃하는 action 사용
+        uses: actions/checkout@v3  
 
       - name: Python 설정
         uses: actions/setup-python@v4
@@ -23,24 +23,31 @@ jobs:
 
       - name: 필요한 패키지 설치
         run: |
-            pip install --no-cache-dir selenium
-            pip install --no-cache-dir webdriver-manager  # selenium과 함께 브라우저 드라이버를 관리하는 패키지
+          python -m pip install selenium webdriver-manager  
 
-      - name: concert_script.py 실행
+      - name: 디버깅 - 현재 디렉터리 확인
+        run: ls -al
+
+      - name: 디버깅 - 설치된 패키지 확인
+        run: pip list
+
+      - name: 콘서트 스크립트 실행 (오류 상세 출력)
         run: |
-          python concert_script.py  # concert_script.py를 실행하는 명령어
+          echo "스크립트 실행 시작"
+          set -x
+          python3 concert_script.py
+
+
+      - name: 오류 로그 확인 (있다면 출력)
+        run: cat error_log.txt || echo "오류 로그 없음"
 
       - name: 변경 사항 커밋 및 푸시
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions@github.com"
           
-          # 변경 사항이 있을 경우에만 커밋
-          git diff --exit-code || git commit -am "Update concert data (auto)"
+          git diff --quiet || (git add . && git commit -m "Update concert data (auto)")
           
-          # GITHUB_TOKEN을 사용하여 푸시
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
